@@ -10,6 +10,6 @@ import br.com.lessandro.model.Album;
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
 	
-	Page<Album> findByCreatedBy(Long userId, Pageable pageable);
+	Page<Album> findByUser(Long userId, Pageable pageable);
 	
 }

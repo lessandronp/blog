@@ -14,7 +14,7 @@ public class PostDto {
 	
 	private Long id;
 	private String title;
-	private String body;
+	private String content;
 	private User user;
 	private List<CommentDto> comments;
 	private List<ImageDto> images;

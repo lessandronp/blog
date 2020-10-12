@@ -1,8 +1,10 @@
 package br.com.lessandro.service.impl;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import br.com.lessandro.dto.AlbumDto;
 import br.com.lessandro.dto.PageDto;
-import br.com.lessandro.dto.mapper.AlbumMapper;
 import br.com.lessandro.model.Album;
 import br.com.lessandro.model.User;
 import br.com.lessandro.repository.AlbumRepository;
@@ -32,6 +33,9 @@ public class AlbumService implements IAlbumService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+    private ModelMapper modelMapper;	
 
 	@Override
 	public PageDto<AlbumDto> getAllAlbums(int page, int size) {
@@ -45,7 +49,7 @@ public class AlbumService implements IAlbumService {
 			return new PageDto<>(Collections.emptyList(), albuns.getNumber(), albuns.getSize(),
 					albuns.getTotalElements(), albuns.getTotalPages(), albuns.isLast());
 		}
-		List<AlbumDto> albunsDto = AlbumMapper.INSTANCE.entitiesToDtos(albuns.getContent());
+		List<AlbumDto> albunsDto = Arrays.asList(modelMapper.map(albuns.getContent(), AlbumDto[].class));
 		return new PageDto<>(albunsDto, albuns.getNumber(), albuns.getSize(), albuns.getTotalElements(),
 				albuns.getTotalPages(), albuns.isLast());
 	}
@@ -53,11 +57,10 @@ public class AlbumService implements IAlbumService {
 	@Override
 	public ResponseEntity<AlbumDto> addAlbum(AlbumDto albumDto, UserPrincipal currentUser) {
 		User user = userRepository.getUser(currentUser);
-		Album album = new Album();
-		album.setUser(user);
-		album = AlbumMapper.INSTANCE.dtoToEntity(albumDto);
-		Album newAlbum = albumRepository.save(album);
-		albumDto = AlbumMapper.INSTANCE.entityToDto(newAlbum);
+		albumDto.setUser(user);
+		Album album = modelMapper.map(albumDto, Album.class);
+		album = albumRepository.save(album);
+		albumDto = modelMapper.map(album, AlbumDto.class);
 		return new ResponseEntity<>(albumDto, HttpStatus.CREATED);
 	}
 
