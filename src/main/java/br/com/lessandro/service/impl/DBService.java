@@ -10,7 +10,7 @@ public class DBService {
 //	@Autowired
 //	private ClienteRepository clienteRepository;
 	
-	public void instantiateTestDatabase() throws ParseException {
+	public void instantiateDatabase() throws ParseException {
 		
 //		Cliente cli1 = new Cliente(null, "Joaquim da Silva", "12345678978", new Date(1980, 12, 10));
 //		Cliente cli2 = new Cliente(null, "Maria Peixoto", "32456978451", new Date(1980, 12, 10));
