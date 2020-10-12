@@ -13,7 +13,9 @@ public class ValidationException extends RuntimeException {
 	private Long timestamp;
 	private String error;
 	private String message;
-
+	private String entity;
+	private String attribute;
+	
 	public ValidationException(String message) {
 		super(message);
 	}
@@ -23,5 +25,11 @@ public class ValidationException extends RuntimeException {
 		this.timestamp = timestamp;
 		this.status = status;
 		this.error = error;
+	}
+
+	public ValidationException(String entity, String attribute, String message) {
+		super(message);
+		this.entity = entity;
+		this.attribute = attribute;
 	}
 }

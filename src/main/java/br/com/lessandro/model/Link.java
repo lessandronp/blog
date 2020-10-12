@@ -1,7 +1,5 @@
 package br.com.lessandro.model;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -18,7 +16,7 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Data
 @EqualsAndHashCode(of = { "url" }, callSuper = false)
-public class Link implements Serializable {
+public class Link extends GenericEntity {
 
 	private static final long serialVersionUID = 1L;
 

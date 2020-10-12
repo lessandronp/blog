@@ -1,6 +1,5 @@
 package br.com.lessandro.model;
 
-import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -21,7 +20,7 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Data
 @EqualsAndHashCode(of = { "name", "user" }, callSuper = false)
-public class Album implements Serializable {
+public class Album extends GenericEntity {
 
 	private static final long serialVersionUID = 1L;
 

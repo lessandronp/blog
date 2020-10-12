@@ -1,6 +1,5 @@
 package br.com.lessandro.model;
 
-import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -21,9 +20,9 @@ import lombok.EqualsAndHashCode;
  
 @Entity
 @Data
-@EqualsAndHashCode(of = {"title", "body"}, 
+@EqualsAndHashCode(of = {"title", "content"}, 
 	callSuper =  false)
-public class Post implements Serializable {
+public class Post extends GenericEntity {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -36,7 +35,7 @@ public class Post implements Serializable {
 	private String title;
 
 	@Column(name = "content")
-	private String body;
+	private String content;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")

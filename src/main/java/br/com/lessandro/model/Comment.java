@@ -1,7 +1,5 @@
 package br.com.lessandro.model;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -19,7 +17,7 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Data
 @EqualsAndHashCode(of = { "text", "user" }, callSuper = false)
-public class Comment implements Serializable {
+public class Comment extends GenericEntity {
 
 	private static final long serialVersionUID = 1L;
 
@@ -40,5 +38,9 @@ public class Comment implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public Comment(String text) {
+		this.text = text;
+	}
 
 }
