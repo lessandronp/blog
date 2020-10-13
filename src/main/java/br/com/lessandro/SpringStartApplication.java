@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  * @author Lessandro
  *
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"br.com.lessandro"})
 @EnableJpaAuditing
 public class SpringStartApplication {
 

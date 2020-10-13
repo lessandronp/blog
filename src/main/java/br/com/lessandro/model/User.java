@@ -19,12 +19,16 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @EqualsAndHashCode(of = { "name", "username" }, callSuper = false)
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "USER_BLOG")
 public class User extends GenericEntity {
 
