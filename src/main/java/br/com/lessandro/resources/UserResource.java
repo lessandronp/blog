@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.lessandro.dto.JwtAuthenticationDto;
 import br.com.lessandro.dto.PageDto;
 import br.com.lessandro.dto.UserDto;
+import br.com.lessandro.resources.exception.ValidationException;
 import br.com.lessandro.security.CurrentUser;
 import br.com.lessandro.security.JwtTokenProvider;
 import br.com.lessandro.security.UserPrincipal;
@@ -32,19 +33,23 @@ public class UserResource {
 
 	@Autowired
 	private IUserService userService;
-	
+
 	@Autowired
 	private AuthenticationManager authenticationManager;
-	
+
 	@Autowired
 	private JwtTokenProvider jwtTokenProvider;
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<PageDto<UserDto>> getAllUsers(
+	public ResponseEntity<?> getAllUsers(
 			@RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
 			@RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-		PageDto<UserDto> users = userService.getAllUsers(page, size);
-		return new ResponseEntity<>(users, HttpStatus.OK);
+		try {
+			PageDto<UserDto> users = userService.getAllUsers(page, size);
+			return new ResponseEntity<>(users, HttpStatus.OK);
+		} catch (ValidationException e) {
+			return ResponseEntity.status(e.getStatus()).body(e.getMessage());
+		}
 	}
 
 	@GetMapping(path = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,17 +59,21 @@ public class UserResource {
 		return new ResponseEntity<>(userDto, HttpStatus.OK);
 	}
 
-	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<UserDto> addUser(@Valid @RequestBody UserDto user) {
-		UserDto newUser = userService.addUser(user);
-		return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+	@PostMapping(path = "/addUser", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+	public ResponseEntity<?> addUser(@Valid @RequestBody UserDto user) {
+		try {
+			UserDto newUser = userService.addUser(user);
+			return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+		} catch (ValidationException e) {
+			return ResponseEntity.status(e.getStatus()).body(e.getMessage());
+		}
 	}
-	
+
 	@PostMapping(path = "/authenticate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<JwtAuthenticationDto> authenticateUser(@Valid @RequestBody UserDto userDto) {
-		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(userDto.getUsername(), userDto.getPassword()));
+		Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(userDto.getUsername(), userDto.getPassword()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtTokenProvider.generateToken(authentication);
 		return ResponseEntity.ok(new JwtAuthenticationDto(jwt));

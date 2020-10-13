@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.validation.constraints.NotBlank;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 import br.com.lessandro.model.User;
@@ -20,13 +21,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findByUsernameOrEmail(String username, String email);
 
-	default User getUser(UserPrincipal currentUser) {
+	default User getUser(UserPrincipal currentUser) throws ValidationException {
 		return getUserByName(currentUser.getUsername());
 	}
 
-	default User getUserByName(String username) {
-		return findByUsername(username)
-				.orElseThrow(() -> new ValidationException("User", "username", username.concat(" não existe")));
+	default User getUserByName(String username) throws ValidationException {
+		return findByUsername(username).orElseThrow(() -> new ValidationException("User", "username",
+				HttpStatus.NOT_FOUND, username.concat(" não existe")));
 	}
 
 }

@@ -22,25 +22,25 @@ public class ClienteTest {
 
 	@Test
 	public void test01Insert()  {
-		try {
+//		try {
 //			ClienteDto clienteDto = new ClienteDto("Joaquim Teixeira", "12312312312", "18/12/1980");
 //			Cliente cliente = clienteService.insert(clienteDto);
 //			clienteId = cliente.getId();
 //			assertNotNull(cliente.getId());
-		} catch (ValidationException e) {
-			Assert.fail(e.getMessage());
-		}
+//		} catch (ValidationException e) {
+//			Assert.fail(e.getMessage());
+//		}
 	}
 
 	@Test
 	public void test02tUpdate()  {
-		try {
+//		try {
 //			ClienteDto clienteDto = new ClienteDto("Joaquim Teixeira", "32145689523", "18/12/1980");
 //			Cliente cliente = clienteService.atualizarCliente(clienteDto, clienteId.toString());
 //			assertEquals(cliente.getCpf(), "32145689523");
-		} catch (ValidationException e) {
-			Assert.fail(e.getMessage());
-		}
+//		} catch (ValidationException e) {
+//			Assert.fail(e.getMessage());
+//		}
 	}
 	
 	@Test

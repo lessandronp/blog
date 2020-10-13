@@ -7,7 +7,6 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import br.com.lessandro.model.User;
 import lombok.Data;
 
 @Data
@@ -15,21 +14,19 @@ import lombok.Data;
 public class AlbumDto {
 	
 	private Long id;
-	private String title;
-	private User user;
-	private List<ImageDto> image;
-	public List<ImageDto> getImage() {
-
-		return image == null ? null : new ArrayList<>(image);
+	private String name;
+	private UserDto user;
+	private List<ImageDto> images;
+	
+	public List<ImageDto> getImages() {
+		return images == null ? null : new ArrayList<>(images);
 	}
 
-	public void setImage(List<ImageDto> image) {
-
-		if (image == null) {
-			this.image = null;
+	public void setImages(List<ImageDto> images) {
+		if (images == null) {
+			this.images = null;
 		} else {
-			this.image = Collections.unmodifiableList(image);
+			this.images = Collections.unmodifiableList(images);
 		}
 	}
-
 }

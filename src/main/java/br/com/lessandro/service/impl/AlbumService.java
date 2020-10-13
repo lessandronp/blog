@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import br.com.lessandro.dto.AlbumDto;
 import br.com.lessandro.dto.PageDto;
 import br.com.lessandro.model.Album;
+import br.com.lessandro.model.Image;
 import br.com.lessandro.model.User;
 import br.com.lessandro.repository.AlbumRepository;
 import br.com.lessandro.repository.UserRepository;
@@ -33,12 +35,12 @@ public class AlbumService implements IAlbumService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
-    private ModelMapper modelMapper;	
+	private ModelMapper modelMapper;
 
 	@Override
-	public PageDto<AlbumDto> getAllAlbums(int page, int size) {
+	public PageDto<AlbumDto> getAllAlbums(int page, int size) throws ValidationException {
 		PageValidator.validatePageSize(page, size);
 
 		Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "creationDate");
@@ -55,26 +57,41 @@ public class AlbumService implements IAlbumService {
 	}
 
 	@Override
-	public ResponseEntity<AlbumDto> addAlbum(AlbumDto albumDto, UserPrincipal currentUser) {
+	public ResponseEntity<AlbumDto> addAlbum(AlbumDto albumDto, UserPrincipal currentUser) throws ValidationException {
 		User user = userRepository.getUser(currentUser);
-		albumDto.setUser(user);
 		Album album = modelMapper.map(albumDto, Album.class);
+		album.setUser(user);
+		prepareAlbumRelationship(album);
 		album = albumRepository.save(album);
 		albumDto = modelMapper.map(album, AlbumDto.class);
 		return new ResponseEntity<>(albumDto, HttpStatus.CREATED);
 	}
 
-	@Override
-	public ResponseEntity<?> deleteAlbum(Long id, UserPrincipal currentUser) {
-		Album album = albumRepository.findById(id).orElseThrow(() -> new ValidationException("Album", "id",
-				"Erro durante remoção do álbum ".concat(String.valueOf(id))));
-		User user = userRepository.getUser(currentUser);
-		if (album.getUser().getId().equals(user.getId())) {
-			albumRepository.deleteById(id);
-			return new ResponseEntity<>("O álbum foi removido com sucesso.", HttpStatus.OK);
+	private void prepareAlbumRelationship(Album album) {
+		if (album.getImages() != null) {
+			for (Image image : album.getImages()) {
+				image.setAlbum(album);
+			}
 		}
-		throw new ValidationException(System.currentTimeMillis(), HttpStatus.UNAUTHORIZED, "Permissão",
-				"Você não tem permissão para a remoção.");
+	}
+
+	@Override
+	public ResponseEntity<?> deleteAlbum(String id, UserPrincipal currentUser) throws ValidationException {
+		if (StringUtils.isNotEmpty(id)) {
+			Long idAlbum = Long.valueOf(id);
+			String albumNotFound = String.format("O álbum informado não existe com esse ID: %s", id);
+			Album album = albumRepository.findById(idAlbum)
+					.orElseThrow(() -> new ValidationException("Album", "id", HttpStatus.NOT_FOUND, albumNotFound));
+			User user = userRepository.getUser(currentUser);
+			if (album.getUser().getId().equals(user.getId())) {
+				albumRepository.deleteById(idAlbum);
+				return new ResponseEntity<>("O álbum foi removido com sucesso.", HttpStatus.OK);
+			}
+			throw new ValidationException(System.currentTimeMillis(), HttpStatus.UNAUTHORIZED, "Permissão",
+					"Você não tem permissão para a remoção.");
+		}
+		throw new ValidationException(System.currentTimeMillis(), HttpStatus.BAD_REQUEST, "Parâmetro",
+				"O parâmetro identificador do álbum precisa ser informado.");
 	}
 
 }

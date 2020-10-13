@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import lombok.Getter;
 
 @Getter	
-public class ValidationException extends RuntimeException {
+public class ValidationException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -25,11 +25,14 @@ public class ValidationException extends RuntimeException {
 		this.timestamp = timestamp;
 		this.status = status;
 		this.error = error;
+		this.message = message;
 	}
 
-	public ValidationException(String entity, String attribute, String message) {
+	public ValidationException(String entity, String attribute, HttpStatus status, String message) {
 		super(message);
 		this.entity = entity;
 		this.attribute = attribute;
+		this.status = status;
+		this.message = message;
 	}
 }

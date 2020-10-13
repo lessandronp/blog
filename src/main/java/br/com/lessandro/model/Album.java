@@ -1,5 +1,6 @@
 package br.com.lessandro.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -39,6 +40,6 @@ public class Album extends GenericEntity {
 	private User user;
 
 	@OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Image> image;
+	private List<Image> images = new ArrayList<>();
 
 }

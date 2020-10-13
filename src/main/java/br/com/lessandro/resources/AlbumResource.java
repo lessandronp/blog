@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.lessandro.dto.AlbumDto;
 import br.com.lessandro.dto.PageDto;
+import br.com.lessandro.resources.exception.ValidationException;
 import br.com.lessandro.security.CurrentUser;
 import br.com.lessandro.security.UserPrincipal;
 import br.com.lessandro.service.IAlbumService;
@@ -24,32 +26,40 @@ import br.com.lessandro.service.IAlbumService;
 @RestController
 @RequestMapping("/rest/albums")
 public class AlbumResource {
-	
+
 	@Autowired
 	private IAlbumService albumService;
 
 	@GetMapping
-	public ResponseEntity<PageDto<AlbumDto>> getAlbums(
-			@RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+	public ResponseEntity<?> getAlbums(@RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
 			@RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-		PageDto<AlbumDto> albums = albumService.getAllAlbums(page, size);
-		return new ResponseEntity<>(albums, HttpStatus.OK);
+		try {
+			PageDto<AlbumDto> albums = albumService.getAllAlbums(page, size);
+			return new ResponseEntity<>(albums, HttpStatus.OK);
+		} catch (ValidationException e) {
+			return ResponseEntity.status(e.getStatus()).body(e.getMessage());
+		}
 	}
-	
-	@PostMapping
+
+	@PostMapping(path = "/addAlbum", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('USER')")
-	public ResponseEntity<AlbumDto> addAlbum(@Valid @RequestBody AlbumDto albumDto,
-			@CurrentUser UserPrincipal currentUser) {
-		ResponseEntity<AlbumDto> albumResponse = albumService.addAlbum(albumDto, currentUser);
-		return albumResponse;
+	public ResponseEntity<?> addAlbum(@Valid @RequestBody AlbumDto albumDto, @CurrentUser UserPrincipal currentUser) {
+		try {
+			return albumService.addAlbum(albumDto, currentUser);
+		} catch (ValidationException e) {
+			return ResponseEntity.status(e.getStatus()).body(e.getMessage());
+		}
 	}
-	
-	@DeleteMapping("/{id}")
+
+	@DeleteMapping(path = "/deleteAlbum/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('USER')")
-	public ResponseEntity<?> deleteAlbum(@PathVariable(name = "id") Long albumId, 
+	public ResponseEntity<?> deleteAlbum(@PathVariable(name = "id") String albumId,
 			@CurrentUser UserPrincipal currentUser) {
-		ResponseEntity<?> response = albumService.deleteAlbum(albumId, currentUser);
-		return response;
+		try {
+			return albumService.deleteAlbum(albumId, currentUser);
+		} catch (ValidationException e) {
+			return ResponseEntity.status(e.getStatus()).body(e.getMessage());
+		}
 	}
 
 }

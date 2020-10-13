@@ -6,7 +6,7 @@ import br.com.lessandro.resources.exception.ValidationException;
 
 public class PageValidator {
 
-	public static void validatePageSize(int page, int size) {
+	public static void validatePageSize(int page, int size) throws ValidationException {
 		if (page < 0) {
 			throw new ValidationException(System.currentTimeMillis(), HttpStatus.BAD_REQUEST, "Erro de validação",
 					"A página não pode ser menor que zero");

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import br.com.lessandro.dto.PageDto;
 import br.com.lessandro.dto.PostDto;
+import br.com.lessandro.model.Comment;
 import br.com.lessandro.model.Image;
+import br.com.lessandro.model.Link;
 import br.com.lessandro.model.Post;
 import br.com.lessandro.model.User;
 import br.com.lessandro.repository.PostRepository;
@@ -34,12 +37,12 @@ public class PostService implements IPostService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
-    private ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Override
-	public PageDto<PostDto> getAllPosts(int page, int size) {
+	public PageDto<PostDto> getAllPosts(int page, int size) throws ValidationException {
 		PageValidator.validatePageSize(page, size);
 
 		Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "creationDate");
@@ -47,8 +50,8 @@ public class PostService implements IPostService {
 		Page<Post> posts = postRepository.findAll(pageable);
 
 		if (posts.getNumberOfElements() == 0) {
-			return new PageDto<>(Collections.emptyList(), posts.getNumber(), posts.getSize(),
-					posts.getTotalElements(), posts.getTotalPages(), posts.isLast());
+			return new PageDto<>(Collections.emptyList(), posts.getNumber(), posts.getSize(), posts.getTotalElements(),
+					posts.getTotalPages(), posts.isLast());
 		}
 		List<PostDto> postsDto = Arrays.asList(modelMapper.map(posts.getContent(), PostDto[].class));
 		return new PageDto<>(postsDto, posts.getNumber(), posts.getSize(), posts.getTotalElements(),
@@ -56,29 +59,52 @@ public class PostService implements IPostService {
 	}
 
 	@Override
-	public ResponseEntity<PostDto> addPost(PostDto postDto, UserPrincipal currentUser) {
+	public ResponseEntity<PostDto> addPost(PostDto postDto, UserPrincipal currentUser) throws ValidationException {
 		User user = userRepository.getUser(currentUser);
-		postDto.setUser(user);
 		Post post = modelMapper.map(postDto, Post.class);
-		for (Image image : post.getImages()) {
-			image.setPost(post);	
-		}
+		preparePostRelationship(post, user);
+		post.setUser(user);
 		post = postRepository.save(post);
 		postDto = modelMapper.map(post, PostDto.class);
 		return new ResponseEntity<>(postDto, HttpStatus.CREATED);
 	}
 
-	@Override
-	public ResponseEntity<?> deletePost(Long id, UserPrincipal currentUser) {
-		Post post = postRepository.findById(id).orElseThrow(() -> new ValidationException("Post", "id",
-				"Erro durante remoção do post ".concat(String.valueOf(id))));
-		User user = userRepository.getUser(currentUser);
-		if (post.getUser().getId().equals(user.getId())) {
-			postRepository.deleteById(id);
-			return new ResponseEntity<>("O post foi removido com sucesso.", HttpStatus.OK);
+	private void preparePostRelationship(Post post, User user) {
+		if (post.getImages() != null) {
+			for (Image image : post.getImages()) {
+				image.setPost(post);
+			}
 		}
-		throw new ValidationException(System.currentTimeMillis(), HttpStatus.UNAUTHORIZED, "Permissão",
-				"Você não tem permissão para a remoção.");
+		if (post.getLinks() != null) {
+			for (Link link : post.getLinks()) {
+				link.setPost(post);
+			}
+		}
+		if (post.getComments() != null) {
+			for (Comment comment : post.getComments()) {
+				comment.setPost(post);
+				comment.setUser(user);
+			}
+		}
+	}
+
+	@Override
+	public ResponseEntity<?> deletePost(String id, UserPrincipal currentUser) throws ValidationException {
+		if (StringUtils.isNotEmpty(id)) {
+			Long postId = Long.parseLong(id);
+			String postNotFound = String.format("O Post informado não existe com esse ID: %s", id);
+			Post post = postRepository.findById(postId)
+					.orElseThrow(() -> new ValidationException("Post", "id", HttpStatus.NOT_FOUND, postNotFound));
+			User user = userRepository.getUser(currentUser);
+			if (post.getUser().getId().equals(user.getId())) {
+				postRepository.deleteById(postId);
+				return new ResponseEntity<>("O post foi removido com sucesso.", HttpStatus.OK);
+			}
+			throw new ValidationException(System.currentTimeMillis(), HttpStatus.UNAUTHORIZED, "Permissão",
+					"Você não tem permissão para a remoção.");
+		}
+		throw new ValidationException(System.currentTimeMillis(), HttpStatus.BAD_REQUEST, "Parâmetro",
+				"O parâmetro identificador do post precisa ser informado.");
 	}
 
 }

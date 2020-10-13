@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,14 +40,14 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Autowired
 	private RoleRepository roleRepository;
-	
+
 	@Autowired
-    private ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	private PasswordEncoder passwordEncoder;
 
 	@Override
-	public PageDto<UserDto> getAllUsers(int page, int size) {
+	public PageDto<UserDto> getAllUsers(int page, int size) throws ValidationException {
 		PageValidator.validatePageSize(page, size);
 		Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "creationDate");
 		Page<User> users = userRepository.findAll(pageable);
@@ -66,13 +67,15 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public UserDto addUser(UserDto userDto) {
+	public UserDto addUser(UserDto userDto) throws ValidationException {
+		String usernameExists = String.format("Já existe um usuário com esse username: %s", userDto.getUsername());
 		if (userRepository.existsByUsername(userDto.getUsername())) {
-			throw new ValidationException("User", "username", "Já existe um usuário com esse username");
+			throw new ValidationException("User", "username", HttpStatus.CONFLICT, usernameExists);
 		}
 		List<Role> roles = new ArrayList<>();
+		String roleNotFound = String.format("Nenhuma role user cadastrada: %s", RoleName.ROLE_USER);
 		roles.add(roleRepository.findByName(RoleName.ROLE_USER)
-				.orElseThrow(() -> new ValidationException("Role", "name", "Nenhuma role user cadastrada.")));
+				.orElseThrow(() -> new ValidationException("Role", "name", HttpStatus.NOT_FOUND, roleNotFound)));
 		User user = modelMapper.map(userDto, User.class);
 		user.setRoles(roles);
 		user.setPassword(passwordEncoder.encode(user.getPassword()));

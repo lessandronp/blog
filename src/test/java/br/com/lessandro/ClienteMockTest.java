@@ -27,14 +27,14 @@ public class ClienteMockTest {
 
 	@Test
 	public void insereCliente() {
-		try {
+//		try {
 //			ClienteDto clienteDto = new ClienteDto("Marco Pereira", "12345689563", "10/02/1975");
 //			Cliente cliente = clienteService.preparaNovoCliente(clienteDto);
 //			when(clienteRepository.save(any(Cliente.class))).thenReturn(cliente);
 //			assertNotNull(cliente.getCpf());
-		} catch (ValidationException e) {
-			Assert.fail();
-		}
+//		} catch (ValidationException e) {
+//			Assert.fail();
+//		}
 	}
 
 }

@@ -16,7 +16,7 @@ import lombok.EqualsAndHashCode;
 
 @Entity
 @Data
-@EqualsAndHashCode(of = { "text", "user" }, callSuper = false)
+@EqualsAndHashCode(of = { "text", "user", "post" }, callSuper = false)
 public class Comment extends GenericEntity {
 
 	private static final long serialVersionUID = 1L;
@@ -39,9 +39,5 @@ public class Comment extends GenericEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
-
-	public Comment(String text) {
-		this.text = text;
-	}
 
 }

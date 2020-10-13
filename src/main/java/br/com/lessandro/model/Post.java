@@ -1,5 +1,6 @@
 package br.com.lessandro.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -14,7 +15,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,7 +23,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(of = {"title", "content"}, 
 	callSuper =  false)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
 public class Post extends GenericEntity {
 	
 	private static final long serialVersionUID = 1L;
@@ -40,21 +39,20 @@ public class Post extends GenericEntity {
 	@Column(name = "content", nullable = false)
 	private String content;
 
-	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Comment> comments;
+	private List<Comment> comments = new ArrayList<>();
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Image> images;
+	private List<Image> images = new ArrayList<>();
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Link> links;
+	private List<Link> links = new ArrayList<>();
 
 }
