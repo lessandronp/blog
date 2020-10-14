@@ -28,8 +28,8 @@ public class SwaggerConfig {
     
     private ApiInfo metaData() {
         return new ApiInfoBuilder()
-            .title("Projeto Spring Boot API")
-            .description("Projeto Spring Boot")
+            .title("Blog API")
+            .description("Projeto Blog")
             .version("1.0.0")
             .license("Apache License Version 2.0")
             .licenseUrl("https://www.apache.org/licenses/LICENSE-2.0\"")
