@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.lessandro.dto.PageDto;
+import br.com.lessandro.dto.UserCredentialDto;
 import br.com.lessandro.dto.UserDto;
 import br.com.lessandro.model.Role;
 import br.com.lessandro.model.RoleName;
@@ -67,20 +68,20 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public UserDto addUser(UserDto userDto) throws ValidationException {
-		String usernameExists = String.format("Já existe um usuário com esse username: %s", userDto.getUsername());
-		if (userRepository.existsByUsername(userDto.getUsername())) {
+	public UserDto addUser(UserCredentialDto userCredential) throws ValidationException {
+		String usernameExists = String.format("Já existe um usuário com esse username: %s", userCredential.getUsername());
+		if (userRepository.existsByUsername(userCredential.getUsername())) {
 			throw new ValidationException("User", "username", HttpStatus.CONFLICT, usernameExists);
 		}
 		List<Role> roles = new ArrayList<>();
 		String roleNotFound = String.format("Nenhuma role user cadastrada: %s", RoleName.ROLE_USER);
 		roles.add(roleRepository.findByName(RoleName.ROLE_USER)
 				.orElseThrow(() -> new ValidationException("Role", "name", HttpStatus.NOT_FOUND, roleNotFound)));
-		User user = modelMapper.map(userDto, User.class);
+		User user = modelMapper.map(userCredential, User.class);
 		user.setRoles(roles);
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user = userRepository.save(user);
-		userDto = modelMapper.map(user, UserDto.class);
+		UserDto userDto = modelMapper.map(user, UserDto.class);
 		return userDto;
 	}
 

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import br.com.lessandro.dto.PageDto;
+import br.com.lessandro.dto.UserCredentialDto;
 import br.com.lessandro.dto.UserDto;
 import br.com.lessandro.model.Album;
 import br.com.lessandro.repository.AlbumRepository;
@@ -40,9 +41,9 @@ public class UserTest {
 	@Order(1)
 	public void testAddUser() {
 		try {
-			UserDto userDto = new UserDto(null, "Usuário Junit Jupiter", "usuariojupiter@teste.com.br",
+			UserCredentialDto userCredential = new UserCredentialDto(null, "Usuário Junit Jupiter", "usuariojupiter@teste.com.br",
 					"usuario.jupiter", "123");
-			userDto = userService.addUser(userDto);
+			UserDto userDto = userService.addUser(userCredential);
 			userId = String.valueOf(userDto.getId());
 			assertNotNull(userId);
 		} catch (ValidationException e) {

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.lessandro.dto.JwtAuthenticationDto;
 import br.com.lessandro.dto.PageDto;
 import br.com.lessandro.dto.UserDto;
+import br.com.lessandro.dto.UserCredentialDto;
 import br.com.lessandro.resources.exception.ValidationException;
 import br.com.lessandro.security.CurrentUser;
 import br.com.lessandro.security.JwtTokenProvider;
@@ -61,7 +62,7 @@ public class UserResource {
 
 	@PostMapping(path = "/addUser", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-	public ResponseEntity<?> addUser(@Valid @RequestBody UserDto user) {
+	public ResponseEntity<?> addUser(@Valid @RequestBody UserCredentialDto user) {
 		try {
 			UserDto newUser = userService.addUser(user);
 			return new ResponseEntity<>(newUser, HttpStatus.CREATED);
@@ -71,9 +72,9 @@ public class UserResource {
 	}
 
 	@PostMapping(path = "/authenticate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<JwtAuthenticationDto> authenticateUser(@Valid @RequestBody UserDto userDto) {
+	public ResponseEntity<JwtAuthenticationDto> authenticateUser(@Valid @RequestBody UserCredentialDto user) {
 		Authentication authentication = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(userDto.getUsername(), userDto.getPassword()));
+				.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtTokenProvider.generateToken(authentication);
 		return ResponseEntity.ok(new JwtAuthenticationDto(jwt));

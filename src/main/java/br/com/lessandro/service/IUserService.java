@@ -3,6 +3,7 @@ package br.com.lessandro.service;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import br.com.lessandro.dto.PageDto;
+import br.com.lessandro.dto.UserCredentialDto;
 import br.com.lessandro.dto.UserDto;
 import br.com.lessandro.resources.exception.ValidationException;
 import br.com.lessandro.security.UserPrincipal;
@@ -13,7 +14,7 @@ public interface IUserService {
 
 	UserDto getCurrentUser(UserPrincipal currentUser);
 
-	UserDto addUser(UserDto user) throws ValidationException;
+	UserDto addUser(UserCredentialDto user) throws ValidationException;
 
 	UserDetails loadUserById(Long id);
 }
