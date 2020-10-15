@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import br.com.lessandro.dto.ImageDto;
 import br.com.lessandro.dto.PageDto;
 import br.com.lessandro.dto.PostDto;
 import br.com.lessandro.model.Comment;
@@ -26,7 +27,9 @@ import br.com.lessandro.repository.PostRepository;
 import br.com.lessandro.repository.UserRepository;
 import br.com.lessandro.resources.exception.ValidationException;
 import br.com.lessandro.security.UserPrincipal;
+import br.com.lessandro.service.IImageService;
 import br.com.lessandro.service.IPostService;
+import br.com.lessandro.validator.ImageValidator;
 import br.com.lessandro.validator.PageValidator;
 
 @Service
@@ -40,6 +43,9 @@ public class PostService implements IPostService {
 
 	@Autowired
 	private ModelMapper modelMapper;
+
+	@Autowired
+	private IImageService imageService;
 
 	@Override
 	public PageDto<PostDto> getAllPosts(int page, int size) throws ValidationException {
@@ -60,13 +66,22 @@ public class PostService implements IPostService {
 
 	@Override
 	public ResponseEntity<PostDto> addPost(PostDto postDto, UserPrincipal currentUser) throws ValidationException {
+		validateImages(postDto);
 		User user = userRepository.getUser(currentUser);
 		Post post = modelMapper.map(postDto, Post.class);
 		preparePostRelationship(post, user);
 		post.setUser(user);
 		post = postRepository.save(post);
+		imageService.generateImagesDisk(post.getImages());
+		post = postRepository.save(post);
 		postDto = modelMapper.map(post, PostDto.class);
 		return new ResponseEntity<>(postDto, HttpStatus.CREATED);
+	}
+
+	private void validateImages(PostDto postDto) throws ValidationException {
+		for (ImageDto imageDto : postDto.getImages()) {
+			ImageValidator.validateImage(imageDto);
+		}
 	}
 
 	private void preparePostRelationship(Post post, User user) {

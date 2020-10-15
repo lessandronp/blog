@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 
 import lombok.Data;
@@ -30,8 +31,7 @@ public class Image extends GenericEntity {
 	@Column(name = "name", nullable = false)
 	private String name;
 
-	@NotBlank
-	@Column(name = "url", nullable = false)
+	@Column(name = "url")
 	private String url;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -41,4 +41,7 @@ public class Image extends GenericEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "post_id")
 	private Post post;
+	
+	@Transient
+	private String contentFile;
 }

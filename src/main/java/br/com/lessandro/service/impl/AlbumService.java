@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import br.com.lessandro.dto.AlbumDto;
+import br.com.lessandro.dto.ImageDto;
 import br.com.lessandro.dto.PageDto;
 import br.com.lessandro.model.Album;
 import br.com.lessandro.model.Image;
@@ -25,6 +26,8 @@ import br.com.lessandro.repository.UserRepository;
 import br.com.lessandro.resources.exception.ValidationException;
 import br.com.lessandro.security.UserPrincipal;
 import br.com.lessandro.service.IAlbumService;
+import br.com.lessandro.service.IImageService;
+import br.com.lessandro.validator.ImageValidator;
 import br.com.lessandro.validator.PageValidator;
 
 @Service
@@ -39,12 +42,14 @@ public class AlbumService implements IAlbumService {
 	@Autowired
 	private ModelMapper modelMapper;
 
+	@Autowired
+	private IImageService imageService;
+
 	@Override
 	public PageDto<AlbumDto> getAllAlbums(int page, int size) throws ValidationException {
 		PageValidator.validatePageSize(page, size);
 
 		Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "creationDate");
-
 		Page<Album> albuns = albumRepository.findAll(pageable);
 
 		if (albuns.getNumberOfElements() == 0) {
@@ -58,13 +63,22 @@ public class AlbumService implements IAlbumService {
 
 	@Override
 	public ResponseEntity<AlbumDto> addAlbum(AlbumDto albumDto, UserPrincipal currentUser) throws ValidationException {
+		validateImages(albumDto);
 		User user = userRepository.getUser(currentUser);
 		Album album = modelMapper.map(albumDto, Album.class);
 		album.setUser(user);
 		prepareAlbumRelationship(album);
 		album = albumRepository.save(album);
+		imageService.generateImagesDisk(album.getImages());
+		album = albumRepository.save(album);
 		albumDto = modelMapper.map(album, AlbumDto.class);
 		return new ResponseEntity<>(albumDto, HttpStatus.CREATED);
+	}
+
+	private void validateImages(AlbumDto albumDto) throws ValidationException {
+		for (ImageDto imageDto : albumDto.getImages()) {
+			ImageValidator.validateImage(imageDto);
+		}
 	}
 
 	private void prepareAlbumRelationship(Album album) {

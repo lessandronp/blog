@@ -12,9 +12,25 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ImageDto {
-	
+
 	private Long id;
 	private String name;
+	private String contentFile;
 	private String url;
+	private String extensionFile;
+	private byte[] contentByte;
+
+	public ImageDto(Long id, String name, String url) {
+		this.id = id;
+		this.name = name;
+		this.url = url;
+	}
+
+	public ImageDto(Long id, String name, byte[] contentByte, String url) {
+		this.id = id;
+		this.name = name;
+		this.url = url;
+		this.contentByte = contentByte;
+	}
 
 }

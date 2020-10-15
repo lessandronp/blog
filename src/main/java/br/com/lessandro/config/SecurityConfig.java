@@ -9,6 +9,7 @@ import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -42,14 +43,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 
 		http.cors().and().csrf().disable().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				.and().authorizeRequests()
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
 				.antMatchers(HttpMethod.GET, "/rest/**").permitAll()
-				.antMatchers(HttpMethod.POST, "/rest/users/authenticate").permitAll()
-				.anyRequest().authenticated();
+				.antMatchers(HttpMethod.POST, "/rest/users/authenticate").permitAll().anyRequest().authenticated();
 
 		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
+	}
+
+	@Override
+	public void configure(WebSecurity web) throws Exception {
+		web.ignoring().antMatchers("/resources/**", "/images/**", "/css/**", "/js/**", "/img/**", "/icon/**");
 	}
 
 	public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
